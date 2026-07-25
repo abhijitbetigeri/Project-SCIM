@@ -39,6 +39,8 @@ restock robot and for human-robot collaboration in a kitchen.
 - **The plan (build from this):** [docs/PLAN.md](docs/PLAN.md)
 - **Track-2 data-collection plan (submission field, paste-ready):** [docs/data-collection-plan.md](docs/data-collection-plan.md)
 - **What VLGE already records (telemetry schema analysis):** [docs/telemetry.md](docs/telemetry.md)
+- **V-CTRL capabilities (triggers, actions, what's buildable):** [docs/vctrl-capabilities.md](docs/vctrl-capabilities.md)
+- **Supplied maps, assets, splat share IDs:** [docs/vlge-assets-and-maps.md](docs/vlge-assets-and-maps.md)
 - **Unity robot-replay demo beat (stretch):** [docs/unity-replay.md](docs/unity-replay.md)
 - **Mise integration contract (task-ticket shape + real numbers):** [mise/INTEGRATION.md](mise/INTEGRATION.md)
 - **Vendored Mise snapshot:** [mise/](mise/) — full copy of the AGI-Summit system, 2026-07-25

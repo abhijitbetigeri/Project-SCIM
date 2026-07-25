@@ -90,7 +90,11 @@ has the verified ticket shape, the real branch inventory numbers, and the branch
 ## Build plan in VLGE (MVP first)
 
 **MVP — a working Play Mode build by ~15:00:**
-1. **Base world:** start from a **supplied map / World 50** (don't gamble on a splat). Read it as back-of-house.
+1. **Base world:** use the **restaurant room template** — `SM_Restaurant_Room_01` with a bar mesh,
+   17 × 10 m, tight enough that congestion exists. See [vlge-assets-and-maps.md](vlge-assets-and-maps.md).
+   Dress a corner with `NewYork Kitchen Island 01` / `NewYork Pots 01` as the prep-and-store area.
+   *Splats are no longer a gamble either — the Teleport Share IDs for all three supplied GS maps are
+   in that doc, so a photoreal base is a paste-and-go if you want one.*
 2. **Zones:** clear markers for **Marina (surplus)**, **Downtown (shortage, red glow)**, **Dock (supplier)**.
 3. **Interactive crates:** grabbable "tomato crate" objects with pick/carry/drop (V-CTRL object +
    inspector + "game" logic if available; otherwise **proximity trigger zones**: enter surplus →
