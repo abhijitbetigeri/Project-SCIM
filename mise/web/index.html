@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Mise - restaurants that restock themselves</title>
+<meta name="description" content="An intelligence supply chain for restaurants: autonomous branch and supplier agents that forecast demand, trade surplus, and keep dishes in stock." />
+<script>(function(){try{var t=localStorage.getItem('mise-theme');if(t)document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
+<!-- Aesthetic: dark-tech precision, native CSS (not a design system). Single locked accent. Light + dark. -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css" />
+<style>
+  :root{
+    --bg:#15100b; --bg2:#1b150e; --panel:#211a12; --panel-2:#291f15;
+    --line:#372a1d; --line-2:#2c2117;
+    --ink:#f2ebdd; --sub:#b3a58f; --dim:#8a7a63;
+    --accent:#e5533d; --accent-ink:#1a120c; --accent-soft:#f0a08f;
+    --r:15px; --shadow:0 24px 60px -28px rgba(0,0,0,.75), 0 2px 0 rgba(255,255,255,.02) inset;
+    --disp:'Bricolage Grotesque',system-ui,sans-serif;
+    --sans:'Hanken Grotesk',system-ui,sans-serif;
+    --mono:'IBM Plex Mono',ui-monospace,monospace;
+    --noise:.05; --glow:rgba(229,83,61,.16);
+  }
+  /* light mode - same locked accent, warm-neutral base (explicit toggle + system auto) */
+  :root[data-theme="light"]{
+    --bg:#f8f5ef; --bg2:#f1ece2; --panel:#ffffff; --panel-2:#f5f0e7;
+    --line:#e6ddcd; --line-2:#eee7db;
+    --ink:#241c14; --sub:#6b5d4c; --dim:#77694f;
+    --accent:#cf4629; --accent-soft:#b23c26;
+    --shadow:0 22px 44px -26px rgba(90,55,30,.30), 0 1px 0 rgba(0,0,0,.03) inset;
+    --noise:.03; --glow:rgba(229,83,61,.10);
+  }
+  @media (prefers-color-scheme: light){
+    :root:not([data-theme]){
+      --bg:#f8f5ef; --bg2:#f1ece2; --panel:#ffffff; --panel-2:#f5f0e7;
+      --line:#e6ddcd; --line-2:#eee7db;
+      --ink:#241c14; --sub:#6b5d4c; --dim:#77694f;
+      --accent:#cf4629; --accent-soft:#b23c26;
+      --shadow:0 22px 44px -26px rgba(90,55,30,.30), 0 1px 0 rgba(0,0,0,.03) inset;
+      --noise:.03; --glow:rgba(229,83,61,.10);
+    }
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.55;
+    -webkit-font-smoothing:antialiased;min-height:100dvh;position:relative;overflow-x:hidden}
+  body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+    background:radial-gradient(90% 60% at 78% -12%,var(--glow),transparent 62%)}
+  body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opacity:var(--noise);
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+  .shell{position:relative;z-index:1;max-width:1200px;margin:0 auto;padding:0 24px}
+  a{color:inherit}
+  i.ph{line-height:1}
+
+  /* nav - single line, <=72px */
+  nav.top{display:flex;align-items:center;justify-content:space-between;height:70px}
+  .logo{display:flex;align-items:center;gap:11px;text-decoration:none}
+  .logo .m{width:34px;height:34px;border-radius:9px;background:var(--accent);color:#fff;display:grid;place-items:center;
+    font-family:var(--disp);font-weight:700;font-size:19px;box-shadow:0 6px 16px -6px rgba(229,83,61,.7)}
+  .logo b{font-family:var(--disp);font-weight:700;font-size:20px;letter-spacing:-.01em}
+  nav.top .links{display:flex;align-items:center;gap:4px}
+  nav.top .links a{font-family:var(--mono);font-size:13px;color:var(--sub);text-decoration:none;padding:9px 13px;border-radius:9px;transition:.15s}
+  nav.top .links a:hover{color:var(--ink);background:var(--panel)}
+  nav.top .links a.src{color:var(--ink)}
+  .themetoggle{display:inline-flex;align-items:center;justify-content:center;width:38px;height:38px;margin-left:4px;
+    border-radius:9px;background:var(--panel);border:1px solid var(--line);color:var(--sub);cursor:pointer;font-size:16px;transition:.15s}
+  .themetoggle:hover{color:var(--ink);border-color:var(--accent-soft)}
+  .themetoggle:active{transform:scale(.94)}
+
+  /* hero - asymmetric split, fits viewport */
+  .hero{display:grid;grid-template-columns:1.02fr .98fr;gap:52px;align-items:center;
+    min-height:calc(100dvh - 70px);padding:40px 0 60px}
+  .eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent-soft);margin-bottom:22px}
+  .hero h1{font-family:var(--disp);font-weight:700;font-size:clamp(40px,6vw,74px);line-height:.98;letter-spacing:-.03em}
+  .hero h1 em{font-style:italic;font-weight:700}
+  .hero .lede{font-size:19px;color:var(--sub);max-width:33ch;margin:24px 0 34px}
+  .hero .lede b{color:var(--ink);font-weight:600}
+  .cta{display:flex;gap:12px;flex-wrap:wrap}
+  .btn{display:inline-flex;align-items:center;gap:9px;text-decoration:none;font-family:var(--mono);font-size:14px;
+    border-radius:999px;padding:14px 22px;transition:transform .12s,background .15s,border-color .15s;border:1px solid transparent}
+  .btn.primary{background:var(--accent);color:var(--accent-ink);font-weight:500;box-shadow:0 12px 28px -12px rgba(229,83,61,.8)}
+  .btn.primary:hover{background:#f0604a} .btn.primary:active{transform:translateY(1px) scale(.99)}
+  .btn.ghost{color:var(--ink);border-color:var(--line);background:var(--panel)}
+  .btn.ghost:hover{border-color:var(--accent-soft)} .btn.ghost:active{transform:translateY(1px) scale(.99)}
+
+  /* live preview screen (real component preview, not a fake screenshot) */
+  .screen{position:relative;display:block;border-radius:var(--r);border:1px solid var(--line);overflow:hidden;
+    background:var(--bg2);box-shadow:var(--shadow);aspect-ratio:4/3;text-decoration:none}
+  .screen .bar{position:absolute;top:0;left:0;right:0;height:34px;z-index:2;background:linear-gradient(180deg,#241c13,#201811);
+    border-bottom:1px solid var(--line-2);display:flex;align-items:center;gap:7px;padding:0 13px}
+  .screen .bar span{width:9px;height:9px;border-radius:50%;background:#3c2e1f}
+  .screen .bar .t{margin-left:8px;font-family:var(--mono);font-size:11px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .screen .frame{position:absolute;inset:34px 0 0 0;overflow:hidden}
+  .screen iframe{position:absolute;top:0;left:0;width:1300px;height:1650px;border:0;transform:scale(.46);transform-origin:top left;pointer-events:none}
+  .screen .open{position:absolute;right:12px;bottom:12px;z-index:3;font-family:var(--mono);font-size:12px;color:var(--accent-ink);
+    background:rgba(229,83,61,.92);border-radius:999px;padding:8px 14px;display:flex;align-items:center;gap:7px;
+    opacity:0;transform:translateY(6px);transition:.18s}
+  .screen:hover .open{opacity:1;transform:none}
+  .screen:hover{border-color:var(--accent)}
+
+  section{padding:78px 0}
+  .lead{font-family:var(--disp);font-weight:600;font-size:clamp(26px,3.4vw,38px);letter-spacing:-.02em;line-height:1.05;max-width:20ch;margin-bottom:34px}
+  .lead .mut{color:var(--dim)}
+
+  /* three views - card grid with live thumbnails */
+  .views{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+  .view{display:flex;flex-direction:column;text-decoration:none;color:inherit;background:var(--panel);
+    border:1px solid var(--line-2);border-radius:var(--r);overflow:hidden;transition:transform .16s,border-color .16s}
+  .view:hover{transform:translateY(-4px);border-color:var(--accent)}
+  .view .thumb{position:relative;height:172px;overflow:hidden;border-bottom:1px solid var(--line-2);background:var(--bg2)}
+  .view .thumb iframe{position:absolute;top:0;left:0;width:1300px;height:1000px;border:0;transform:scale(.34);transform-origin:top left;pointer-events:none}
+  .view .body{padding:18px 19px 20px}
+  .view .ic{color:var(--accent);font-size:22px;margin-bottom:11px;display:flex;align-items:center;justify-content:space-between}
+  .view .ic .tag{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent-ink);background:var(--accent);border-radius:999px;padding:3px 9px}
+  .view h3{font-family:var(--disp);font-weight:600;font-size:21px;letter-spacing:-.01em}
+  .view p{color:var(--sub);font-size:14px;margin-top:8px}
+  .view .go{font-family:var(--mono);font-size:12.5px;color:var(--accent-soft);margin-top:14px;display:flex;align-items:center;gap:6px}
+
+  /* under the hood - layered rows (different layout family) + resource links */
+  .hood{display:grid;grid-template-columns:1.25fr .95fr;gap:26px;align-items:start}
+  .stack .row{display:flex;gap:18px;padding:17px 0;border-top:1px solid var(--line-2)}
+  .stack .row:first-child{border-top:0}
+  .stack .row .k{font-family:var(--mono);font-size:13px;font-weight:500;color:var(--ink);min-width:92px;padding-top:2px}
+  .stack .row .v{color:var(--sub);font-size:14.5px}
+  .stack .row .v b{color:var(--ink);font-weight:600}
+  .res{display:flex;flex-direction:column;gap:10px}
+  .res a{display:flex;align-items:center;justify-content:space-between;gap:14px;text-decoration:none;color:var(--ink);
+    background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px;transition:.15s}
+  .res a:hover{border-color:var(--accent-soft);transform:translateX(3px)}
+  .res a .l{display:flex;align-items:center;gap:11px}
+  .res a .l i{color:var(--accent);font-size:18px}
+  .res a .l small{display:block;font-family:var(--mono);font-size:11px;color:var(--dim);margin-top:1px}
+  .res a .ar{color:var(--dim)}
+
+  footer{border-top:1px solid var(--line-2);padding:26px 0 46px;display:flex;justify-content:space-between;
+    flex-wrap:wrap;gap:10px;font-family:var(--mono);font-size:12.5px;color:var(--dim)}
+  footer a{color:var(--sub);text-decoration:none} footer a:hover{color:var(--ink)}
+
+  /* motion - reveal on scroll (IntersectionObserver), reduced-motion safe */
+  .rise{opacity:0;transform:translateY(18px);transition:opacity .6s cubic-bezier(.16,1,.3,1),transform .6s cubic-bezier(.16,1,.3,1)}
+  .rise.in{opacity:1;transform:none}
+  @media (prefers-reduced-motion:reduce){.rise{opacity:1;transform:none;transition:none}.btn,.view,.res a{transition:none}}
+
+  @media (max-width:920px){
+    .hero{grid-template-columns:1fr;min-height:0;padding:24px 0 40px;gap:34px}
+    .views{grid-template-columns:1fr} .hood{grid-template-columns:1fr}
+    nav.top .links a:not(.src){display:none}
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <nav class="top">
+    <a class="logo" href="index.html"><span class="m">M</span><b>Mise</b></a>
+    <div class="links">
+      <a href="mesh.html">Mesh</a>
+      <a href="branch.html">Branch Ops</a>
+      <a href="market.html">Market</a>
+      <a class="src" href="https://github.com/abhijitbetigeri/SC-Intelligence" target="_blank" rel="noopener">Source</a>
+      <button class="themetoggle" id="themeBtn" type="button" aria-label="Toggle light or dark mode"><i class="ph ph-sun"></i></button>
+    </div>
+  </nav>
+
+  <header class="hero">
+    <div class="rise in">
+      <div class="eyebrow">Intelligence supply chain for restaurants</div>
+      <h1>Restaurants that <em>restock themselves.</em></h1>
+      <p class="lede">Branches and suppliers become <b>autonomous agents</b> that forecast demand, trade surplus before buying, and keep favorite dishes in stock.</p>
+      <div class="cta">
+        <a class="btn primary" href="mesh.html"><i class="ph ph-play-circle"></i> Live demo</a>
+        <a class="btn ghost" href="https://github.com/abhijitbetigeri/SC-Intelligence" target="_blank" rel="noopener"><i class="ph ph-github-logo"></i> Source</a>
+      </div>
+    </div>
+    <a class="screen rise in" href="mesh.html" aria-label="Open the live Mesh Console">
+      <div class="bar"><span></span><span></span><span></span><span class="t">mesh console · trattoria-verde</span></div>
+      <div class="frame"><iframe src="mesh.html" title="Mesh Console preview" loading="lazy" scrolling="no" tabindex="-1"></iframe></div>
+      <span class="open">Open <i class="ph ph-arrow-up-right"></i></span>
+    </a>
+  </header>
+
+  <section>
+    <h2 class="lead rise">Three views of the same system. <span class="mut">Follow the order.</span></h2>
+    <div class="views">
+      <a class="view rise" href="mesh.html">
+        <div class="thumb"><iframe src="mesh.html" title="Mesh Console" loading="lazy" scrolling="no" tabindex="-1"></iframe></div>
+        <div class="body">
+          <div class="ic"><i class="ph ph-tree-structure"></i><span class="tag">Start here</span></div>
+          <h3>Mesh Console</h3>
+          <p>Watch branch and supplier agents negotiate a weekend tomato shortage in real time.</p>
+          <div class="go">Run the rebalance cycle <i class="ph ph-arrow-right"></i></div>
+        </div>
+      </a>
+      <a class="view rise" href="branch.html">
+        <div class="thumb"><iframe src="branch.html" title="Branch Operations" loading="lazy" scrolling="no" tabindex="-1"></iframe></div>
+        <div class="body">
+          <div class="ic"><i class="ph ph-package"></i></div>
+          <h3>Branch Operations</h3>
+          <p>A branch admin's inventory console: stock, demand projections, and a live AI assistant.</p>
+          <div class="go">Open the dashboard <i class="ph ph-arrow-right"></i></div>
+        </div>
+      </a>
+      <a class="view rise" href="market.html">
+        <div class="thumb"><iframe src="market.html" title="Market Intelligence" loading="lazy" scrolling="no" tabindex="-1"></iframe></div>
+        <div class="body">
+          <div class="ic"><i class="ph ph-storefront"></i></div>
+          <h3>Market Intelligence</h3>
+          <p>Eight cuisines scraped from the web: restaurants, menus, and cross-cuisine ingredient demand.</p>
+          <div class="go">Explore the market <i class="ph ph-arrow-right"></i></div>
+        </div>
+      </a>
+    </div>
+  </section>
+
+  <section>
+    <div class="hood">
+      <div class="stack rise">
+        <div class="row"><div class="k">Cotal</div><div class="v"><b>Coordination.</b> Branches and suppliers are agent nodes that negotiate stock peer to peer, anycast, no central planner.</div></div>
+        <div class="row"><div class="k">Runtype</div><div class="v"><b>Reasoning.</b> Six agent capabilities (forecast, rebalance, procurement, promotion, concierge, inventory) plus an MCP bridge.</div></div>
+        <div class="row"><div class="k">InsForge</div><div class="v"><b>State and hosting.</b> Postgres for inventory, transfers, purchase orders, and the scraped market. It serves this site.</div></div>
+        <div class="row"><div class="k">Persona</div><div class="v"><b>Conversation.</b> The embedded chat widget behind the in-app assistants.</div></div>
+      </div>
+      <div class="res rise">
+        <a href="https://github.com/abhijitbetigeri/SC-Intelligence" target="_blank" rel="noopener"><span class="l"><i class="ph ph-github-logo"></i><span>Source code<small>github.com/abhijitbetigeri/SC-Intelligence</small></span></span><i class="ph ph-arrow-up-right ar"></i></a>
+        <a href="https://use.runtype.com/products/prod_01kxvr3fcneskr35jfxqhekaj0" target="_blank" rel="noopener"><span class="l"><i class="ph ph-robot"></i><span>Runtype product<small>agents, flows and evals</small></span></span><i class="ph ph-arrow-up-right ar"></i></a>
+        <a href="https://github.com/abhijitbetigeri/SC-Intelligence/blob/main/docs/cotal-mesh.md" target="_blank" rel="noopener"><span class="l"><i class="ph ph-graph"></i><span>Why Cotal, with the demo script<small>docs/cotal-mesh.md</small></span></span><i class="ph ph-arrow-up-right ar"></i></a>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <span>Mise. AGI Summit 2026. Hosted on InsForge.</span>
+    <span><a href="mesh.html">Mesh</a> &nbsp; <a href="branch.html">Branch Ops</a> &nbsp; <a href="market.html">Market</a></span>
+  </footer>
+
+</div>
+
+<script>
+  // reveal on scroll - IntersectionObserver (no scroll listener), motivated: staggered entrance = hierarchy
+  const io = new IntersectionObserver((entries)=>{
+    entries.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add("in"); io.unobserve(e.target); } });
+  }, {threshold:.18});
+  document.querySelectorAll(".rise:not(.in)").forEach(el=>io.observe(el));
+
+  // light / dark toggle - persists in localStorage, defaults to system preference
+  const root=document.documentElement, tb=document.getElementById("themeBtn");
+  const curTheme=()=> root.getAttribute("data-theme") || (matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark");
+  const syncIcon=()=>{ tb.innerHTML = curTheme()==="light" ? '<i class="ph ph-moon"></i>' : '<i class="ph ph-sun"></i>'; };
+  syncIcon();
+  tb.addEventListener("click", ()=>{
+    const next = curTheme()==="light" ? "dark" : "light";
+    root.setAttribute("data-theme", next);
+    try{ localStorage.setItem("mise-theme", next); }catch(e){}
+    syncIcon();
+  });
+</script>
+</body>
+</html>

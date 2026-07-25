@@ -14,6 +14,31 @@ human demonstration becomes training data for a restaurant-logistics robot.**
 
 Through-line: **coordination (decided) → embodied execution (done) → behavioral dataset (learned).**
 
+### The bigger frame: supply chain as a world model
+
+State this in the pitch and the Q&A — it's what lifts the project from "a game about carrying
+crates" to a physical-AI thesis:
+
+- **World models.** A restock robot cannot be trained in a spreadsheet. It needs a *world* — shelves
+  at real heights, crates with real mass, a service line that gets crowded at 19:00. Project-SCIM is
+  a small world model of back-of-house, and the same world serves double duty: humans play in it to
+  generate data, and a policy can later be evaluated in it.
+- **Robots doing the rebalancing.** Today Mise's transfer ticket ends with a human runner. The
+  endgame is the ticket dispatching to a robot: pick the near-expiry crate, navigate the line, place
+  it on the Downtown shelf. The world is where that policy is taught and tested before it touches a
+  real kitchen.
+- **Human-robot collaboration timing.** The handoff is the crux, not the carry. *When* does a robot
+  release a crate? How close does it approach a moving cook? How long does it wait? These are
+  timing distributions you can only get by watching humans do it — which is exactly what the
+  multiplayer handoff captures.
+- **Why a game world and not a real kitchen.** Cheaper, safer, infinitely repeatable, and free of
+  the consent problem — you cannot capture behavioral data in a real working kitchen without
+  addressing identifiable people (the handbook is explicit about this). Simulation sidesteps it and
+  scales.
+
+**One-liner:** *"Supply chain has a brain — Mise. It doesn't have a body. Project-SCIM is the world
+where we grow one."*
+
 ## Track: VLGE Together (Social + Behavior)
 
 A bullseye — Track 2 wants *"interaction that produces useful data for robotics, physical AI, or
@@ -49,10 +74,18 @@ session-telemetry panel. Makes the data story tangible and screenshots well.
 
 ## Tie to the winning Mise agents (originality edge)
 
-- **MVP:** hardcode the scenario (36 → transfer 10 → buy 26 → $53.30) as the world's script.
-- **Stretch:** live tie-in — the hosted Mise `rebalance_and_procure` agent (over the existing MCP
-  bridge) emits the transfer decision, which **spawns the physical task** in the world. *"Agents that
-  decide, worlds that do."* Reuses infra you already have.
+Mise is now **vendored at [`mise/`](../mise/)** (all 90 tracked files, snapshot of 2026-07-25).
+Read **[`mise/INTEGRATION.md`](../mise/INTEGRATION.md)** before building the world's task logic — it
+has the verified ticket shape, the real branch inventory numbers, and the branch UUIDs.
+
+- **MVP:** script the scenario (36 short → transfer 10 → buy 26 → $53.30) — but shape the world's
+  task object like a Mise `transfer` / `po` record from the start. Same effort now, and the live
+  tie-in becomes a config flip instead of a rewrite.
+- **Stretch:** live tie-in — the hosted `rebalance_and_procure` agent emits the transfer decision
+  over the MCP bridge, which **spawns the physical task** in the world. *"Agents that decide, worlds
+  that do."*
+- **Demo safety:** copy Mise's own pattern (`provision/server/mise.js`) — fixture by default, live
+  when a token is set. The world must play with the network unplugged.
 
 ## Build plan in VLGE (MVP first)
 
@@ -70,7 +103,11 @@ session-telemetry panel. Makes the data story tangible and screenshots well.
 - Multiplayer: a Marina **runner** + a Downtown **cook** with a real **handoff** (the Track-2 social behavior).
 - Real-kitchen Gaussian splat as the base (timebox: if not ready by mid-afternoon, keep the supplied map).
 - Live Mise agent → task-ticket tie-in.
-- Downloadable telemetry CSV + the written "future data-collection plan" (a required Track-2 field).
+- Downloadable telemetry CSV — **done**, `scripts/extract_trajectory.py` (see [telemetry.md](telemetry.md)).
+- The written "future data-collection plan" (a required Track-2 field).
+- **Unity robot replay clip** for the demo video — gated on a stable MVP by ~16:00. See
+  [unity-replay.md](unity-replay.md). No ROS needed; VLGE is Unity underneath, so poses transfer
+  with no coordinate conversion.
 
 ## Day schedule (deadline 18:30 PT)
 
