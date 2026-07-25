@@ -48,10 +48,10 @@ namespace ProjectScim
             switch (p)
             {
                 case Preset.Branches:
-                    // Framed on the three branches, close enough that the shelf colour
-                    // reads. Sits left of centre so the HUD panel doesn't cover Downtown.
-                    _targetPos = new Vector3(6f, 26f, -22f);
-                    _targetRot = Quaternion.Euler(46f, -8f, 0f);
+                    // Centred and pitched down hard, so the branch cluster sits in the
+                    // lower-middle band of the frame — clear of both HUD panels.
+                    _targetPos = new Vector3(0f, 33f, -21f);
+                    _targetRot = Quaternion.Euler(52f, 0f, 0f);
                     break;
 
                 case Preset.Warehouse:

@@ -44,10 +44,12 @@ namespace ProjectScim
             {
                 new Branch { Name = "Downtown", OnHand = 4f,  Par = 40f, Reorder = 12f,
                              ExpiryDays = 4, DailyBurn = 14.16f, Origin = new Vector3(0f, 0f, 0f) },
+                // Kept tight in x so all three branches sit between the HUD panels
+                // rather than under them.
                 new Branch { Name = "Marina",   OnHand = 34f, Par = 24f, Reorder = 8f,
-                             ExpiryDays = 2, DailyBurn = 10.1f, Origin = new Vector3(-26f, 0f, 14f) },
+                             ExpiryDays = 2, DailyBurn = 10.1f, Origin = new Vector3(-19f, 0f, 15f) },
                 new Branch { Name = "Mission",  OnHand = 16f, Par = 20f, Reorder = 6f,
-                             ExpiryDays = 5, DailyBurn = 8.1f,  Origin = new Vector3(26f, 0f, 14f) },
+                             ExpiryDays = 5, DailyBurn = 8.1f,  Origin = new Vector3(19f, 0f, 15f) },
             };
         }
 
