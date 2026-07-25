@@ -29,20 +29,15 @@ TYPES = {
 
 class UnityHandler(http.server.SimpleHTTPRequestHandler):
     def end_headers(self):
-        path = self.translate_path(self.path)
-        root, ext = os.path.splitext(path)
-
+        # Only Content-Encoding is added here. Content-Type is already correct —
+        # Python's guess_type strips the .br suffix and reports the inner type —
+        # and sending a second one makes the browser discard the response.
+        # COOP/COEP are deliberately absent: require-corp blocks the loader's
+        # own fetches unless every asset also carries CORP, which stalls the
+        # progress bar at 0%.
+        _, ext = os.path.splitext(self.translate_path(self.path))
         if ext in ENCODINGS:
             self.send_header("Content-Encoding", ENCODINGS[ext])
-            # The real type comes from the extension *under* the compression
-            # suffix — Build.wasm.br is a wasm file, not a "br" file.
-            inner = os.path.splitext(root)[1]
-            if inner in TYPES:
-                self.send_header("Content-Type", TYPES[inner])
-
-        # Unity's threading builds want these; harmless otherwise.
-        self.send_header("Cross-Origin-Opener-Policy", "same-origin")
-        self.send_header("Cross-Origin-Embedder-Policy", "require-corp")
         self.send_header("Cache-Control", "no-store")
         super().end_headers()
 

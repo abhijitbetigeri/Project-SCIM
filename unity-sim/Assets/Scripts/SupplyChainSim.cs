@@ -325,6 +325,11 @@ namespace ProjectScim
             return go;
         }
 
+        // Loaded from Assets/Resources so the build stripper keeps the shader. Primitives
+        // created at runtime reference nothing in the saved scene, so URP/Lit gets
+        // stripped and everything renders magenta in a player build.
+        static Material _litSource;
+
         GameObject Prim(string name, PrimitiveType type, Vector3 pos, Vector3 size, Color c,
                         Transform parent)
         {
@@ -333,8 +338,14 @@ namespace ProjectScim
             go.transform.SetParent(parent, false);
             go.transform.position = pos;
             go.transform.localScale = size;
+
             var r = go.GetComponent<Renderer>();
-            if (r != null) r.material.color = c;
+            if (r != null)
+            {
+                if (_litSource == null) _litSource = Resources.Load<Material>("SimLit");
+                if (_litSource != null) r.material = new Material(_litSource);
+                r.material.color = c;
+            }
             return go;
         }
 
