@@ -1,4 +1,4 @@
-# Mise Floor — build plan
+# Project-SCIM — build plan
 
 > Verify the exact VLGE interaction features in the [VLGE guide](https://world.vlge.com/vlge-guide)
 > in the first 20 minutes. Everything below is designed to degrade gracefully if a feature isn't there.
@@ -9,7 +9,7 @@ You won AGI Summit 2026 proving **agents can decide** the optimal restock. This 
 **physical AI**, so the extension is the unsolved half: **executing** that decision in real 3D space,
 and generating the **behavioral data** a robot needs to learn it.
 
-**Mise (software) decides what should move. Mise Floor is the world where it gets done — and every
+**Mise (software) decides what should move. Project-SCIM is the world where it gets done — and every
 human demonstration becomes training data for a restaurant-logistics robot.**
 
 Through-line: **coordination (decided) → embodied execution (done) → behavioral dataset (learned).**
@@ -42,7 +42,7 @@ collaboration timing), **congestion / near-misses** (obstacle avoidance under dy
 **Physical-AI use case (state it to judges):** a demonstration + data-generation environment for a
 back-of-house **restock / inter-branch logistics robot**. Human plays → imitation-learning dataset →
 a policy for pick-carry-place and human-aware navigation in a real kitchen. Mise supplies the *task
-tickets*; Mise Floor supplies the *embodied demonstrations*. A decision→action data flywheel.
+tickets*; Project-SCIM supplies the *embodied demonstrations*. A decision→action data flywheel.
 
 Even if VLGE logging is optional, **show the data**: a live **path-trace / heatmap** overlay + a
 session-telemetry panel. Makes the data story tangible and screenshots well.
@@ -99,7 +99,7 @@ session-telemetry panel. Makes the data story tangible and screenshots well.
 - **Timebox the splat and multiplayer.** *A working experience scores better than an unfinished
   capture*, and *no extra credit for unused features.* Nail the single-player loop first.
 - **"Why does this matter?"** (Q&A one-liner): *"Agents can already decide the optimal restock; the
-  unsolved part is doing it in a cramped kitchen — Mise Floor turns human play into the demonstration
+  unsolved part is doing it in a cramped kitchen — Project-SCIM turns human play into the demonstration
   data that teaches restaurant robots to execute."*
 
 ## Submission fields to prep (one form per team, by 18:30 PT)

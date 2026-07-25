@@ -1,11 +1,13 @@
-# Mise Floor — a spatial behavior lab for restaurant logistics
+# Project-SCIM — Supply Chain Intelligence Management
+
+*A spatial behavior lab for restaurant logistics — the physical-AI extension of [Mise](https://github.com/abhijitbetigeri/SC-Intelligence).*
 
 **Open World Hackathon · 25 Jul 2026 · San Francisco · Powered by VLGE** · Track 2 (VLGE Together — Social + Behavior)
 
-> *Mise (software) decides **what** should move. Mise Floor is the world where it **gets done** —
+> *Mise (software) decides **what** should move. Project-SCIM is the world where it **gets done** —
 > and every human demonstration becomes training data for a restaurant-logistics robot.*
 
-Mise Floor is the **embodied / physical-AI extension** of [Mise](https://github.com/abhijitbetigeri/SC-Intelligence)
+Project-SCIM is the **embodied / physical-AI extension** of [Mise](https://github.com/abhijitbetigeri/SC-Intelligence)
 — our AGI-Summit-2026-winning multi-agent restaurant supply chain. That system proved agents can
 *decide* the optimal restock (transfer surplus between branches, buy only the net shortage, one
 approval). This project tackles the unsolved half: **executing that decision in real 3D space**, and
