@@ -54,29 +54,48 @@ So a crate can read "Pick up — 10 kg Roma tomatoes (expires 2d)" without any s
 `ColorOverride_0` is how the Downtown shelf glows red and then stops glowing on resolve — no scripting
 needed, just a field change driven from an Action.
 
-## Still unknown — and the exact 2-minute check
+## RESOLVED: the complete Function list
 
-The `Function` dropdown's `possibleValues` reads `["Nothing"]` in every recording, because whoever
-made these sessions added an `Action_0` slot and **never selected a Target**. The function list is
-populated per-Target, so it can't be recovered from these files.
+21 additional JSON files sat unextracted inside the supplied zips, mostly Edit Mode. In one of them
+someone **did** select a Target, which populated the `Function` dropdown's `possibleValues`. The full
+list, for a `StaticMesh` target:
 
-**Do this first when you open V-CTRL:**
+| Function | Use in the restock loop |
+|---|---|
+| **`SetVisible`** | the carry mechanic — hide the crate at Marina, show it at Downtown |
+| **`SetColor 0`–`SetColor 4`** | the shortage glow on the Downtown shelf, cleared on resolve |
+| **`MoveTo`** | slide a crate onto a shelf; move the dock delivery into place |
+| `Rotate` / `Scale` | emphasis, attention cues |
+| `SetTexture 0`–`SetTexture 4` | swap a crate label / signage |
+| `SetAutoRotating` | idle spin to draw the eye to the objective |
+| `SetExternalURL` | link out — not useful here |
 
-1. Place an `EventVolume`.
-2. On `OnCharacterEnter`, click `+` to add an Action.
-3. Set **Target** to some object.
-4. **Open the Function dropdown and read the list.** Screenshot it.
+There is also a third event hook: **`GlobalSettingsPrefab.OnStart` (List)** — a world-level init
+action, which is where the scenario should be set up (glow the shelf, show the objective).
 
-That list is the entire remaining unknown. Specifically, look for a function that:
+And `AnimationStartingCondition` accepts `Start` / `On Trigger` / `On Interact` / `Never`, so placed
+assets can animate on the same triggers.
 
-- **attaches an object to the player** (carry) — if it exists, the full pick→carry→place loop is native
-- **shows/hides or moves an object** — enough to fake carrying (hide crate at Marina, show it at Downtown)
-- **sets a field** on another entity — drives the shelf glow and any HUD text
-- **shows text / a message** — the objective and the resolve readout
+### What this settles
 
-**Fallback if there is no carry function:** hide-at-source / show-at-destination is visually identical
-for a 60-second demo and uses only show/hide. Don't spend more than 10 minutes hunting for true
-carry.
+**There is no attach-to-player function — true carry does not exist.** Don't spend a minute looking
+for it. The loop is built from `SetVisible`:
+
+1. `OnStart` → Downtown shelf `SetColor` red, objective visible.
+2. Enter Marina volume → crate `SetVisible(false)` at Marina, carried-crate `SetVisible(true)`.
+3. Enter Downtown volume → carried crate off, shelf crate on, shelf `SetColor` back to normal.
+4. Enter Dock volume → the 26 kg delivery appears, place it, resolved.
+
+Visually identical to carrying for a 60-second demo.
+
+**There is no text/HUD function either** — no `SetText`, no message box. Work around it with the
+`ImageMedia` entity type (present in the recordings, 44 records): pre-render each objective and
+readout line as an image, place them all, and toggle with `SetVisible`. That covers "Short 36 kg
+tomatoes", "10 kg delivered", and "$53.30, resolved" without any text API.
+
+**Caveat:** this list is for a `StaticMesh` target. Other target types (`GlobalSettings`,
+`ImageMedia`) may expose different functions — worth 30 seconds checking in the editor, since a
+`GlobalSettings` target might offer something better for HUD.
 
 ## Unknown: multiplayer and NPCs
 
