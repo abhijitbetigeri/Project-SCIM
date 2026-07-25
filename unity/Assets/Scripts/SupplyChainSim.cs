@@ -26,6 +26,27 @@ namespace ProjectScim
         public bool TransferDone { get; private set; }
         public bool PurchaseDone { get; private set; }
 
+        /// <summary>
+        /// What the robot is doing right now, so an outbound "go and fetch" leg is never
+        /// mistaken for a delivery. Empty when the robot is idle.
+        /// </summary>
+        public string RobotActivity
+        {
+            get
+            {
+                if (_robot == null) return "";
+                switch (_robot.Current)
+                {
+                    case RobotAgent.Phase.ToSource:  return "robot en route to collect — empty";
+                    case RobotAgent.Phase.Picking:   return "picking up the crate";
+                    case RobotAgent.Phase.ToDest:    return "CARRYING to Downtown";
+                    case RobotAgent.Phase.Handoff:   return "handing off to the cook";
+                    case RobotAgent.Phase.Placing:   return "placing on the shelf";
+                    default: return "";
+                }
+            }
+        }
+
         readonly Dictionary<string, Transform> _anchors = new Dictionary<string, Transform>();
         RobotAgent _robot;
         Transform _cook;
@@ -248,7 +269,10 @@ namespace ProjectScim
             // The robot: a body, a sensor mast, and a colour that reads as machine.
             var robotGo = new GameObject("RestockRobot");
             robotGo.transform.SetParent(transform, false);
-            robotGo.transform.position = MiseScenario.WarehouseOrigin + new Vector3(6f, 0f, 6f);
+            // Starts at Downtown — the branch that is short. Its first leg is then an
+            // outbound trip to fetch, and the return leg is the actual transfer. Starting
+            // at the warehouse made the first leg look like a supplier delivery.
+            robotGo.transform.position = Branches[0].Origin + new Vector3(5f, 0f, 3f);
 
             Box("Chassis", Vector3.zero, new Vector3(1.1f, 0.55f, 1.5f), RobotBlue, robotGo.transform,
                 localOffset: new Vector3(0f, 0.35f, 0f));

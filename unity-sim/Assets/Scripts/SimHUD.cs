@@ -87,6 +87,16 @@ namespace ProjectScim
             GUI.Label(new Rect(28, y + 12, w - 28, 18), sim.PhaseLabel.ToUpper(), _kicker);
             GUI.Label(new Rect(28, y + 34, w - 42, 60), sim.StatusLine, _body);
 
+            string activity = sim.RobotActivity;
+            if (!string.IsNullOrEmpty(activity))
+            {
+                var prev = _kicker.normal.textColor;
+                _kicker.normal.textColor = activity.StartsWith("CARRYING")
+                    ? new Color(0.55f, 0.86f, 0.66f) : new Color(0.85f, 0.72f, 0.45f);
+                GUI.Label(new Rect(28, y + 84, w - 42, 18), "› " + activity, _kicker);
+                _kicker.normal.textColor = prev;
+            }
+
             float ry = y + 100f;
             GUI.Label(new Rect(28, ry, w - 40, 18),
                       string.Format("{0,-10} {1,8} {2,6} {3,14}", "BRANCH", "ON HAND", "PAR", "STATUS"), _mono);
