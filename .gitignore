@@ -41,3 +41,7 @@ splats/
 # Source data, not source code: keep local, never commit. Derived summaries
 # and any small sampled excerpt live in docs/ instead.
 VLGE_Sessions/
+
+# HUD build artifacts (regenerate with scripts/make_hud_images.py)
+build/
+.venv-hud/
