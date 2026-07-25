@@ -1,0 +1,38 @@
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Node (if any tooling / web bridge)
+node_modules/
+.env
+.env.local
+*.log
+
+# AI agent skill dirs
+.agents
+.claude
+.cline
+.roo
+.windsurf
+skills-lock.json
+
+# Unity (if Track-2 build uses Unity)
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+[Ll]ogs/
+[Uu]ser[Ss]ettings/
+*.csproj
+*.unityproj
+*.sln
+*.apk
+*.unitypackage
+
+# VLGE / capture artifacts (large)
+*.ply
+captures/
+splats/

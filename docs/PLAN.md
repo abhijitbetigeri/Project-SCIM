@@ -1,0 +1,110 @@
+# Mise Floor — build plan
+
+> Verify the exact VLGE interaction features in the [VLGE guide](https://world.vlge.com/vlge-guide)
+> in the first 20 minutes. Everything below is designed to degrade gracefully if a feature isn't there.
+
+## The idea
+
+You won AGI Summit 2026 proving **agents can decide** the optimal restock. This hackathon is about
+**physical AI**, so the extension is the unsolved half: **executing** that decision in real 3D space,
+and generating the **behavioral data** a robot needs to learn it.
+
+**Mise (software) decides what should move. Mise Floor is the world where it gets done — and every
+human demonstration becomes training data for a restaurant-logistics robot.**
+
+Through-line: **coordination (decided) → embodied execution (done) → behavioral dataset (learned).**
+
+## Track: VLGE Together (Social + Behavior)
+
+A bullseye — Track 2 wants *"interaction that produces useful data for robotics, physical AI, or
+behavior modeling"* and to *"identify the robotics/physical-AI use case and the behaviors or
+telemetry that could be valuable."* Coordination behavior + a credible data-collection use is exactly
+that. **Fallback:** Track 1 (Open Narrative) as a single-player "restock-run" puzzle — same world,
+no networking.
+
+## Core loop (what a judge does in ~60s)
+
+1. **Enter** the back-of-house world. Red glow on the **Downtown** shelf: *"Short 36 kg tomatoes."*
+2. **Find the surplus** at **Marina** (a near-expiry crate, subtly marked — reward picking the right one).
+3. **Carry it** along a route, past the cramped "line" during service (the congestion point).
+4. **Hand off / place** on the Downtown shelf. Resolves; HUD: *"10 kg delivered · waste avoided · net 26 kg."*
+5. The remaining **26 kg** arrives at the **dock** from the supplier → place it → *"$53.30, resolved."* Timer + score.
+
+Clear start, objective, interaction, end state (the handbook's Definition of Done).
+
+## The spatial + behavioral model (the crux)
+
+Per session, capture: **trajectories** (pos over time → navigation/route choice), **pick/place
+events** (manipulation targets), **handoff events** (two players, proximity, transfer → human-robot
+collaboration timing), **congestion / near-misses** (obstacle avoidance under dynamic humans),
+**expiry-aware choice** (did they grab the near-expiry crate? → policy-quality signal).
+
+**Physical-AI use case (state it to judges):** a demonstration + data-generation environment for a
+back-of-house **restock / inter-branch logistics robot**. Human plays → imitation-learning dataset →
+a policy for pick-carry-place and human-aware navigation in a real kitchen. Mise supplies the *task
+tickets*; Mise Floor supplies the *embodied demonstrations*. A decision→action data flywheel.
+
+Even if VLGE logging is optional, **show the data**: a live **path-trace / heatmap** overlay + a
+session-telemetry panel. Makes the data story tangible and screenshots well.
+
+## Tie to the winning Mise agents (originality edge)
+
+- **MVP:** hardcode the scenario (36 → transfer 10 → buy 26 → $53.30) as the world's script.
+- **Stretch:** live tie-in — the hosted Mise `rebalance_and_procure` agent (over the existing MCP
+  bridge) emits the transfer decision, which **spawns the physical task** in the world. *"Agents that
+  decide, worlds that do."* Reuses infra you already have.
+
+## Build plan in VLGE (MVP first)
+
+**MVP — a working Play Mode build by ~15:00:**
+1. **Base world:** start from a **supplied map / World 50** (don't gamble on a splat). Read it as back-of-house.
+2. **Zones:** clear markers for **Marina (surplus)**, **Downtown (shortage, red glow)**, **Dock (supplier)**.
+3. **Interactive crates:** grabbable "tomato crate" objects with pick/carry/drop (V-CTRL object +
+   inspector + "game" logic if available; otherwise **proximity trigger zones**: enter surplus →
+   attach crate → enter shortage → resolve).
+4. **Objective + HUD:** on-screen goal text + readout (kg delivered, waste avoided, $53.30).
+5. **Play Mode:** the full loop runs start-to-end **without builder intervention**, from a shareable link.
+
+**Stretch (only after MVP is solid):**
+- Path-trace / heatmap overlay (the data visual).
+- Multiplayer: a Marina **runner** + a Downtown **cook** with a real **handoff** (the Track-2 social behavior).
+- Real-kitchen Gaussian splat as the base (timebox: if not ready by mid-afternoon, keep the supplied map).
+- Live Mise agent → task-ticket tie-in.
+- Downloadable telemetry CSV + the written "future data-collection plan" (a required Track-2 field).
+
+## Day schedule (deadline 18:30 PT)
+
+| Time | Do |
+|------|-----|
+| 10:00–10:30 | Lock the one-sentence loop; **read the VLGE guide** (confirm object/interaction/multiplayer features) |
+| 10:30–11:30 | Base map + zones (Marina / Downtown / Dock) placed |
+| 11:30–13:30 | The **pick → carry → place** interaction working single-player |
+| 13:30–15:00 | Objective + HUD + resolve logic + $53.30 readout → **working Play Mode MVP** |
+| 15:00–16:30 | Path-trace/heatmap **or** multiplayer handoff (pick ONE) |
+| 16:30–17:00 | Mentor check-in — show the core loop, ask one focused question |
+| 17:00–17:45 | **Freeze features.** Test the exact judge path in a clean session |
+| 17:45–18:20 | Backup video (60–90s) + 3 screenshots + write the data-collection plan |
+| 18:20–18:30 | **Submit the Google Form.** Save the confirmation |
+
+## Judging alignment (100 pts)
+
+- **Experience + Usability (25):** stranger enters, understands the shortage, resolves it — trivial controls.
+- **Technical Execution (25):** stable Play Mode, reliable pick/place, runs from a link.
+- **Track Fit + Impact (20):** Track 2 to the core — behavior → credible robot dataset.
+- **Originality (20):** decision→embodiment loop + a real supply-chain behavior model in space (ideally the live agent tie-in).
+- **Demo + Reproducibility (10):** judge-ready world link, controls text, disclosures (VLGE, supplied map, Mise agents / AI tools).
+
+## Risks & the rule that wins
+
+- **Timebox the splat and multiplayer.** *A working experience scores better than an unfinished
+  capture*, and *no extra credit for unused features.* Nail the single-player loop first.
+- **"Why does this matter?"** (Q&A one-liner): *"Agents can already decide the optimal restock; the
+  unsolved part is doing it in a cramped kitchen — Mise Floor turns human play into the demonstration
+  data that teaches restaurant robots to execute."*
+
+## Submission fields to prep (one form per team, by 18:30 PT)
+
+Team + participant names · project title + **track (VLGE Together)** + engine · one-sentence pitch ·
+judge-accessible world/build link · 60–90s backup video · 3 strongest screenshots · setup / controls
+/ expected outcome · **Track 2 future data-collection plan** · external assets/datasets/AI tools used ·
+repo/notes + device requirements.
