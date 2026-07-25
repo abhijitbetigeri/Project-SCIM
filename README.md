@@ -37,6 +37,7 @@ restock robot and for human-robot collaboration in a kitchen.
 ## Where to start
 
 - **The plan (build from this):** [docs/PLAN.md](docs/PLAN.md)
+- **Track-2 data-collection plan (submission field, paste-ready):** [docs/data-collection-plan.md](docs/data-collection-plan.md)
 - **What VLGE already records (telemetry schema analysis):** [docs/telemetry.md](docs/telemetry.md)
 - **Unity robot-replay demo beat (stretch):** [docs/unity-replay.md](docs/unity-replay.md)
 - **Mise integration contract (task-ticket shape + real numbers):** [mise/INTEGRATION.md](mise/INTEGRATION.md)
