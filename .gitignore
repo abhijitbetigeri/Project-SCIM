@@ -45,3 +45,8 @@ VLGE_Sessions/
 # HUD build artifacts (regenerate with scripts/make_hud_images.py)
 build/
 .venv-hud/
+
+# Screen recordings and build intermediates (large; keep local)
+*.mov
+*.mp4
+unity-sim/Data/
