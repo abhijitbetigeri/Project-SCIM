@@ -19,7 +19,11 @@ namespace ProjectScim
         public float MaxSpeed = 3.2f;
         public float Accel = 6f;
         public float TurnRate = 220f;      // deg/sec
-        public float ArriveRadius = 1.2f;
+        public float ArriveRadius = 2.4f;
+
+        [Tooltip("Give up steering and count as arrived after this long. A demo must " +
+                 "never hang, whatever the geometry does.")]
+        public float NavTimeout = 22f;
 
         [Header("Avoidance")]
         public float LookAhead = 3.0f;
@@ -41,6 +45,7 @@ namespace ProjectScim
 
         Vector3 _velocity;
         float _timer;
+        float _navTime;
         Transform _source, _dest, _payload, _handoffPartner;
         string _taskLabel = "";
         Transform _carryAnchor;
@@ -65,6 +70,7 @@ namespace ProjectScim
             _taskLabel = label;
             Current = Phase.ToSource;
             CurrentAction = "walk";
+            _navTime = 0f;
             SimTelemetry.Instance?.GameplayEvent(ActorName, label, "task_assigned");
         }
 
@@ -187,14 +193,31 @@ namespace ProjectScim
         {
             Vector3 flat = new Vector3(target.x, transform.position.y, target.z);
             Vector3 toTarget = flat - transform.position;
+            float dist = toTarget.magnitude;
 
-            if (toTarget.magnitude <= ArriveRadius)
+            if (dist <= ArriveRadius)
             {
+                Decelerate();
+                _navTime = 0f;
+                return true;
+            }
+
+            // Failsafe. Geometry can always conspire to trap a steering agent; a stalled
+            // robot would kill the demo, so accept arrival and carry on.
+            _navTime += Time.deltaTime;
+            if (_navTime >= NavTimeout)
+            {
+                _navTime = 0f;
+                transform.position = flat - toTarget.normalized * ArriveRadius;
                 Decelerate();
                 return true;
             }
 
-            Vector3 desired = toTarget.normalized + Avoidance() * AvoidStrength;
+            // Avoidance is suppressed on approach: the target here is a shelf or dock,
+            // and its own collider would otherwise push the robot away from the thing
+            // it is trying to reach — the robot stalls a couple of metres short.
+            Vector3 desired = toTarget.normalized;
+            if (dist > ArriveRadius * 2.5f) desired += Avoidance() * AvoidStrength;
             desired = desired.normalized;
 
             // Slow into the target so arrival isn't a hard stop — reads as deliberate,
