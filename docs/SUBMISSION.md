@@ -40,7 +40,7 @@ trajectory and event counts accumulating. Press `T` at any point to export the d
 *(Short version — the full reasoning is in [data-collection-plan.md](data-collection-plan.md))*
 
 **Physical-AI use case.** A back-of-house restock and inter-branch logistics robot for restaurants.
-Our agent system Mise (AGI Summit 2026 winner) already decides *what* stock should move between
+Our agent system Mise already decides *what* stock should move between
 branches; what does not exist is a policy that can *execute* that decision in a cramped working
 kitchen. Project-SCIM generates the demonstration data that policy needs.
 
@@ -72,7 +72,7 @@ contributor's data can be located and deleted on request.
 
 ## External assets / datasets / AI tools used
 
-- **Mise** — our own **pre-existing work** (AGI Summit 2026 winner). Reused here as the decision layer
+- **Mise** — our own **pre-existing work**, built before this event. Reused here as the decision layer
   that emits the restock ticket. **The hackathon-built artifact is the simulation, the robot's
   execution of that ticket, and the telemetry pipeline.**
 - **Unity 6** (6000.x LTS). All geometry is generated procedurally from primitives at runtime — no
@@ -97,7 +97,7 @@ Any modern desktop browser with WebGL 2. Keyboard and mouse. No headset, no inst
 
 **0:00 — the problem (20s).**
 > "A restaurant franchise stocks out at one branch while another throws away surplus. There's no
-> coordination layer. We solved the *decision* half at AGI Summit — our agents negotiate the transfer.
+> coordination layer. We solved the *decision* half already — our agents negotiate the transfer.
 > But deciding isn't doing. Nobody has solved executing it in a cramped kitchen."
 
 **0:20 — view 1, the branches (40s).** Press `1`.

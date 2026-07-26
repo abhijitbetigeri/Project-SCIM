@@ -91,7 +91,7 @@ Shared state (Postgres, InsForge): `https://k3trn3a2.us-east.insforge.app` —
 
 ## What to disclose on the submission form
 
-External assets / prior work: **Mise is pre-existing work** (AGI Summit 2026), reused here as the
+External assets / prior work: **Mise is pre-existing work**, built before this event, reused here as the
 decision layer. The hackathon-built artifact is the world, the embodiment of the ticket, and the
 telemetry. Say this plainly — the handbook judges "work built or meaningfully integrated during the
 hackathon", and the integration is the meaningful part. Also disclose: VLGE/V-CTRL, any supplied map

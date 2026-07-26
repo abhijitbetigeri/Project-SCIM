@@ -8,7 +8,7 @@ Every schema name is real — read from the supplied VLGE sessions, see [telemet
 ## Short version — paste into the form
 
 **Physical-AI use case.** A back-of-house restock and inter-branch logistics robot for restaurants.
-Our agent system Mise (AGI Summit 2026) already decides *what* stock should move between branches;
+Our agent system Mise already decides *what* stock should move between branches;
 what does not exist is a policy that can *execute* that decision in a cramped working kitchen.
 Project-SCIM generates the demonstration data that policy needs.
 

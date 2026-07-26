@@ -173,7 +173,7 @@ Form: https://forms.gle/AgyhxvcXJGFNj9PC8
 - Pitch: *"Mise's agents decide the optimal restock; Project-SCIM is the world where a human executes
   it — and every run becomes demonstration data for a restaurant logistics robot."*
 - **Data-collection plan:** paste the short version from [data-collection-plan.md](data-collection-plan.md)
-- **Disclosures:** VLGE/V-CTRL, supplied restaurant template, Mise as **pre-existing work** (AGI
-  Summit 2026) reused as the decision layer, Cotal/Runtype/InsForge, AI coding tools
+- **Disclosures:** VLGE/V-CTRL, supplied restaurant template, Mise as **pre-existing work** reused
+  as the decision layer, Cotal/Runtype/InsForge, AI coding tools
 
 **Submit by 18:20.** Save the confirmation.

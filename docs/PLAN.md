@@ -5,7 +5,7 @@
 
 ## The idea
 
-You won AGI Summit 2026 proving **agents can decide** the optimal restock. This hackathon is about
+Mise already proved **agents can decide** the optimal restock. This hackathon is about
 **physical AI**, so the extension is the unsolved half: **executing** that decision in real 3D space,
 and generating the **behavioral data** a robot needs to learn it.
 

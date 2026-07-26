@@ -15,7 +15,7 @@ measured rather than assumed, and every session emits the demonstration data a r
 would train on. Supply chain stops being rows in a database and becomes a spatial, embodied problem.
 
 Project-SCIM is the **embodied / physical-AI extension** of [Mise](https://github.com/abhijitbetigeri/SC-Intelligence)
-— our AGI-Summit-2026-winning multi-agent restaurant supply chain. That system proved agents can
+— our multi-agent restaurant supply chain. That system proved agents can
 *decide* the optimal restock (transfer surplus between branches, buy only the net shortage, one
 approval). This project tackles the unsolved half: **executing that decision in real 3D space**, and
 generating the **spatial + behavioral demonstration data** an embodied restock/logistics robot needs
@@ -43,7 +43,7 @@ restock robot and for human-robot collaboration in a kitchen.
 - **Supplied maps, assets, splat share IDs:** [docs/vlge-assets-and-maps.md](docs/vlge-assets-and-maps.md)
 - **Unity robot-replay demo beat (stretch):** [docs/unity-replay.md](docs/unity-replay.md)
 - **Mise integration contract (task-ticket shape + real numbers):** [mise/INTEGRATION.md](mise/INTEGRATION.md)
-- **Vendored Mise snapshot:** [mise/](mise/) — full copy of the AGI-Summit system, 2026-07-25
+- **Vendored Mise snapshot:** [mise/](mise/) — full copy of the Mise system, 2026-07-25
 - **Hackathon brief + rules + judging + links:** [docs/hackathon-brief.md](docs/hackathon-brief.md)
 - **Build in V-CTRL:** https://vctrl.vlge.com · **VLGE guide:** https://world.vlge.com/vlge-guide
 - **Supplied maps / shared resources:** https://drive.google.com/drive/folders/1UG9KbSpQp-ntFher2geb4RfO0hTfezuV
