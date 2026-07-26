@@ -49,4 +49,13 @@ build/
 # Screen recordings and build intermediates (large; keep local)
 *.mov
 *.mp4
+
+# ── Exceptions: the published site under web/ ────────────────────────────
+# web/sim/ is the shipped Unity Web build and web/*.mov is the demo video —
+# both are deliverables a judge loads, not build scratch. They have to beat
+# the [Bb]uild/ and *.mov rules above, which otherwise swallow them (macOS
+# is case-insensitive, so "build/" matches "Build/" too).
+!web/sim/
+!web/sim/**
+!web/*.mov
 unity-sim/Data/
