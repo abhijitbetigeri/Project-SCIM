@@ -194,12 +194,12 @@ namespace ProjectScim
             root.SetParent(transform, false);
             root.position = b.Origin;
 
-            // Room: floor pad, back wall, side walls left open so the camera can see in.
+            // Open-fronted set: pad and a back wall only. Side walls used to box the robot
+            // in — whisker steering has no path planner, so it deadlocked against them.
             Box("Pad", b.Origin + new Vector3(0f, 0.02f, 0f), new Vector3(16f, 0.1f, 12f),
                 Wall * 0.9f, root);
-            Box("BackWall", b.Origin + new Vector3(0f, 1.6f, -6f), new Vector3(16f, 3.2f, 0.3f), Wall, root);
-            Box("SideWallL", b.Origin + new Vector3(-8f, 1.6f, 0f), new Vector3(0.3f, 3.2f, 12f), Wall, root);
-            Box("SideWallR", b.Origin + new Vector3(8f, 1.6f, 0f), new Vector3(0.3f, 3.2f, 12f), Wall, root);
+            NoObstacle(Box("BackWall", b.Origin + new Vector3(0f, 1.6f, -6f),
+                           new Vector3(16f, 3.2f, 0.3f), Wall, root));
 
             // The stock shelf — colour encodes shortage/surplus, which is the whole read.
             var shelfPos = b.Origin + new Vector3(0f, 0.6f, -4.6f);
@@ -228,9 +228,12 @@ namespace ProjectScim
             root.SetParent(transform, false);
 
             Box("Pad", o + new Vector3(0f, 0.02f, 0f), new Vector3(34f, 0.1f, 20f), Wall * 0.8f, root);
-            Box("BackWall", o + new Vector3(0f, 3f, -10f), new Vector3(34f, 6f, 0.4f), Wall, root);
-            Box("SideL", o + new Vector3(-17f, 3f, 0f), new Vector3(0.4f, 6f, 20f), Wall, root);
-            Box("SideR", o + new Vector3(17f, 3f, 0f), new Vector3(0.4f, 6f, 20f), Wall, root);
+            NoObstacle(Box("BackWall", o + new Vector3(0f, 3f, -10f),
+                           new Vector3(34f, 6f, 0.4f), Wall, root));
+            NoObstacle(Box("SideL", o + new Vector3(-17f, 3f, 0f),
+                           new Vector3(0.4f, 6f, 20f), Wall, root));
+            NoObstacle(Box("SideR", o + new Vector3(17f, 3f, 0f),
+                           new Vector3(0.4f, 6f, 20f), Wall, root));
 
             // Racking — the distributor's inventory, and the visual identity of view 2.
             for (int row = 0; row < 4; row++)
@@ -290,6 +293,7 @@ namespace ProjectScim
 
             _robot = robotGo.AddComponent<RobotAgent>();
             _robot.ActorName = "restock-robot-01";
+            _robot.ObstacleMask = ~(1 << 2);   // everything except Ignore Raycast (walls)
             SimTelemetry.Instance?.Track(robotGo.transform, "restock-robot-01");
 
             // The cook at the Downtown pass — the human half of the collaboration.
@@ -370,6 +374,17 @@ namespace ProjectScim
                 if (_litSource != null) r.material = new Material(_litSource);
                 r.material.color = c;
             }
+            return go;
+        }
+
+        /// <summary>
+        /// Move an object to Ignore Raycast so the robot's whiskers don't see it. Used for
+        /// walls: they read as architecture but must not steer the agent, which has no
+        /// path planner and would simply jam against them.
+        /// </summary>
+        static GameObject NoObstacle(GameObject go)
+        {
+            go.layer = 2;   // built-in Ignore Raycast
             return go;
         }
 
