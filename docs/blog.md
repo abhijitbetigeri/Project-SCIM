@@ -1,200 +1,157 @@
-# Six empty arrays
+# Supply chain has a brain. Now it needs a body.
 
-*How we found the gap in robot training data by reading a game engine's own session recordings —
-and then built the thing that fills it.*
-
----
-
-## The brain had no body
-
-We already had the hard half working. Mise is a multi-agent system for restaurant supply chains:
-branch and supplier agents negotiate peer-to-peer, and when one location runs short they resolve it
-between themselves before anyone buys anything.
-
-Here's the case it handles, using real numbers from our fixtures rather than a toy example. Downtown
-holds 4.0 kg of Roma tomatoes against a par of 40 — **36 kg short**, well below its reorder point.
-Marina holds 34.0 against a par of 24 — **10 kg surplus**, and that stock expires in two days.
-Mission holds 16.0 kg, which *looks* like it could help, except its own par is 20. It's short too. It
-can't donate.
-
-So the agents move Marina's near-expiry stock first, then buy only the net 26 kg at $2.05/kg.
-**$53.30.** One approval instead of three independent purchase orders and a bin full of spoiled
-tomatoes.
-
-That's a decision. It is not an action.
-
-Somebody still has to walk into a kitchen mid-service and physically move 10 kg of tomatoes from one
-place to another — through sub-metre clearances, around a crew that's moving, carrying an object
-whose *identity matters*, because the near-expiry crate is not interchangeable with the fresh one
-sitting next to it.
-
-No robot does that today. We wanted to know why. The answer turned out to be less about actuators
-than about data.
-
-## Reading an engine from its own exhaust
-
-We started building in VLGE, and were handed 12 GB of sample session recordings — six maps, Edit Mode
-and Play Mode captures, 97 JSON files.
-
-Most teams would treat those as example content. We treated them as documentation, because that's
-what they turned out to be.
-
-Each session file carries **17 record arrays**. Not gameplay logging — *demonstration* capture. Body
-and camera pose at roughly 195 Hz. A `frameSignalRecords` block with velocity decomposed into
-longitudinal, lateral and vertical, plus slip angle, yaw rate, jerk, path curvature and turn radius.
-Discretised action labels. And two fields that gave the game away: **`dm_action_token_id`** and an
-**11-dimensional `dm_latent_action_vec`**.
-
-That's action tokenisation. It's the representation behaviour-cloning and world models train on.
-Whoever built that recorder was not thinking about games.
-
-There was more. `spatialSensorFrames` describes a **240-ray depth scan** — 24 azimuth by 10
-elevation, 90° × 60° field of view, 40 m range, 2 Hz — reporting nearest object type and material
-tag. A depth camera in all but name. And it carries an `isAgent` boolean, meaning the schema already
-anticipates recording non-human actors alongside humans.
-
-Then the editor recordings gave us something better. `entitySnapshot.fields` embeds the **complete
-inspector surface** of every prefab someone touched. We could reverse-engineer what the editor could
-do without opening the editor:
-
-```
-EventVolume  [FunctionalAsset]
-  OnCharacterEnter      (List)   <-- event hook
-  OnCharacterInteract   (List)   <-- event hook
-  ViewTriggerInPlay     (Bool)
-```
-
-Each list entry is an Action of `{Target, Function, Parameters}` — a visual scripting system. And in
-one file, buried inside a zip nobody had extracted, someone had actually selected a Target, which
-populated the dropdown:
-
-```
-SetVisible · SetColor 0–4 · MoveTo · Rotate · Scale
-SetTexture 0–4 · SetAutoRotating · SetExternalURL
-```
-
-No attach-to-player. No text API. We knew, before touching the editor, that true carrying didn't
-exist and the HUD would have to be pre-rendered images toggled with `SetVisible`. That saved an hour
-we didn't have.
-
-## The finding
-
-Then we counted what was actually *in* those 17 arrays across all 97 files.
-
-Eleven were populated. Six were empty in **every single session**:
-
-| Channel | Records, across 97 sessions |
-|---|---|
-| `zoneIdentifierAccesses` | 0 |
-| `interactionSnapshots` | 0 |
-| `interactionEventRecords` | 0 |
-| `gamePlayEventRecords` | 0 |
-| `chatMessages` | 0 |
-| `audioMessages` | 0 |
-
-They're empty because the sample sessions are people walking around looking at furniture. No zones
-were defined. Nothing was interactive. There was no task and no second actor.
-
-The engine computes a metric called `zone_convergence_density`. It reads **0.0** in every session,
-because there were no zones to converge on.
-
-That's the whole project in one number. The recorder is excellent. The *payload* is missing. Nobody
-had given it a purposeful task to record — manipulation, task phases, and two actors coordinating.
-
-Those six channels are exactly what a restock task generates.
-
-## When the plan breaks
-
-Mid-afternoon, VLGE's project export stopped working. Without it we couldn't author scenes
-programmatically, and hand-placing everything through a browser editor wasn't going to happen in the
-time left.
-
-So we moved to Unity — with about three hours on the clock and Unity not yet installed.
-
-The constraint shaped the design, and improved it. With no time for an art pipeline, **everything is
-generated procedurally from primitives at runtime**. No prefabs, no imported models, no scene setup.
-Create an empty project, drop in six C# files, press Play. A `[RuntimeInitializeOnLoadMethod]`
-bootstraps three restaurant branches, a distributor warehouse, the crates, the zones and the robot.
-
-The pivot also strengthened the argument. In VLGE a human was going to stand in for the robot. In
-Unity the robot executes the ticket itself. "Robots doing the rebalancing" stopped being a roadmap
-slide.
-
-## What the robot taught us about steering
-
-Three failures, each instructive.
-
-**It stopped short of everything.** The agent uses whisker raycasts for obstacle avoidance. As it
-closed on a shelf, the whiskers hit *that shelf* and pushed back harder than the seek force pulled
-in. It stalled two metres out, oscillating, forever. Avoidance was repelling it from its own
-destination. Fix: suppress avoidance inside 2.5× the arrival radius — and add a navigation timeout,
-because a demo must never hang whatever the geometry does.
-
-**It jammed against walls.** The robot spawned inside a room with side walls and had to leave to
-reach the source. Whisker steering has no path planner; it ground against the wall until the timeout
-rescued it. Fix: open-fronted rooms, and every remaining wall moved to Ignore Raycast so it reads as
-architecture without steering the agent. Tables and shelves stayed as obstacles — that's where the
-clearance behaviour worth recording comes from.
-
-**It looked like it was delivering, not fetching.** The robot spawned at the warehouse, so its first
-leg was warehouse→Marina — purely to *reach* the crate. On screen that read as goods flowing from the
-distributor to Marina, the exact opposite of the ticket. Fix: start it at Downtown, the branch that's
-short, so the outbound leg is a fetch and the return leg is the transfer. And surface the current leg
-on the HUD: *"robot en route to collect — empty"* versus *"CARRYING to Downtown"*.
-
-That last one wasn't a bug in the code. It was a bug in what the code *communicated*, which for a
-judged demo is the same thing.
-
-## Two hours of shipping
-
-The build rendered magenta. Everything is created at runtime, so nothing in the saved scene
-references URP's Lit shader, and the build stripper dropped it — correct in the Editor, broken in the
-player. The documented fix, adding it to *Always Included Shaders*, doesn't work: that picker only
-searches `Assets/`, and URP's shaders live in `Packages/`. We shipped a material asset in
-`Resources/` instead and instantiate copies from it. A material in Resources is always included, and
-it drags its shader along with it.
-
-Then GitHub Pages refused to serve the build. Unity compresses Web builds to Brotli; Pages doesn't
-send `Content-Encoding: br` and gives you no way to set response headers. Since we couldn't configure
-the host, we removed the compression — decompressed the `.br` files in place and repointed the
-loader. The wasm went from 7.9 MB to 43 MB. It loads on any static host with zero configuration,
-which was the only property that mattered.
-
-## What we actually have
-
-A simulation you can open in a browser that plays itself in about 45 seconds. Three restaurant
-branches, a distributor warehouse, shelf colour encoding stock state. A robot takes the transfer
-ticket, drives to Marina empty, picks the near-expiry crate, carries it back through the service
-pass, pauses at the cook, releases, places. Then it collects the purchase order from the distributor.
-Shelf goes red to green. $53.30.
-
-And every run writes a dataset: trajectories with pose, speed and action label; zone entry and exit;
-pick and place events with begin/complete timestamps; and handoff events logging **approach distance
-and release delay**.
-
-That last one is the point. Plenty of prior work treats humans as obstacles to route around. Far less
-treats them as *collaborators receiving an object* — a person who isn't looking at the robot, in a
-space too small to wait in politely. How close do you get? How long do you hold? When do you let go?
-Those are distributions, and you only get them by watching it happen many times.
-
-## What this isn't
-
-Nothing is learned here. The robot follows a scripted task. What works end to end is the pipeline
-from execution to robot-consumable trajectory data — training a policy on it is the next step, not
-this one, and we'd rather say so than let a judge discover it in Q&A.
-
-Avoidance is three raycasts, not a planner. Simulated depth is clean; real depth is noisy. There's no
-force or grasp data, so this addresses navigation, target selection and collaboration timing — not
-dexterous manipulation. And a hackathon produces a proof of pipeline, not a dataset.
-
-One choice we'd defend regardless of time: **it had to be simulated.** You cannot lawfully record a
-working kitchen. Staff mid-shift can't consent frame by frame, and a commercial kitchen is a private
-space. Simulation doesn't dodge the consent problem — it removes it, and makes congestion and
-near-misses safe and repeatable besides.
+*Why we built a world where robots learn to run a restaurant's back-of-house — and why the data it
+generates matters more than the simulation itself.*
 
 ---
 
-Supply chain has a brain. It didn't have a body. This is where we started growing one.
+## The same tomato, twice
 
-**Live:** https://abhijitbetigeri.github.io/Project-SCIM/
-**Source:** https://github.com/abhijitbetigeri/Project-SCIM
+Walk into a franchise's Downtown location on a Friday and you'll find them out of tomatoes. Walk into
+their Marina location twenty minutes later and you'll find a case going soft in the walk-in.
+
+Same company. Same product. Same week. One is turning away orders; the other is filling a bin.
+
+This isn't negligence. It's structural. Every branch forecasts its own demand, orders from its own
+supplier, and has no visibility into what the branch across town is holding. The obvious fix — move
+stock between locations before buying new — requires a coordination layer that simply doesn't exist in
+most operations. So it never happens.
+
+## What we solved first
+
+**Mise** is that coordination layer. Branch and supplier agents negotiate peer-to-peer: when a
+location dips below its reorder point, the network resolves it internally before anyone raises a
+purchase order.
+
+Here's a live case from the system:
+
+| Branch | On hand | Par | Expiry | Position |
+|---|---|---|---|---|
+| **Downtown** | 4.0 kg | 40 | 4 days | **36 kg short** — below reorder |
+| **Marina** | 34.0 kg | 24 | **2 days** | 10 kg surplus, near expiry |
+| Mission | 16.0 kg | 20 | 5 days | also short — cannot donate |
+
+The naive answer is to buy 36 kg. The right answer is to move Marina's near-expiry stock *first* —
+because in two days it's waste no matter what — then purchase only the net 26 kg.
+
+**Result: $53.30 spent instead of a full order, 10 kg of waste avoided, one approval instead of
+three.**
+
+Multiply that across products, locations and weeks and you have the margin most operators are looking
+for. This part works today.
+
+## The half nobody has solved
+
+Then we watched what happens after the decision.
+
+A person walks into a kitchen mid-service and physically moves 10 kg of tomatoes. Through gaps under
+a metre wide. Around a crew that's moving fast and not looking. Carrying an object whose *identity
+matters* — the near-expiry crate is not interchangeable with the fresh one beside it, and picking the
+wrong one silently undoes the entire optimisation.
+
+Every operator we describe this to says the same thing: *that's the part that doesn't happen
+reliably.*
+
+It's also precisely the work the robotics industry is racing toward — and precisely where it has the
+least data. Manipulation datasets are overwhelmingly tabletop. Warehouse datasets assume wide aisles,
+structured racking, and no humans underfoot. A restaurant back-of-house is the opposite of all three.
+
+You cannot train a policy on data that doesn't exist. So we built the place where it does.
+
+## Project-SCIM
+
+**Project-SCIM is a world model for restaurant logistics** — a simulated back-of-house where the
+restock decision is carried out physically, and every execution is captured as training data.
+
+Three branches. A distributor warehouse. A robot that receives the ticket Mise generates and performs
+it: drives to the branch holding surplus, selects the near-expiry crate specifically, carries it back
+through the service pass, hands it to the cook, places it on the shelf. Then collects the purchase
+order from the distributor and closes the shortage.
+
+Shelf colour tells you the state of the business at a glance — red below reorder, amber below par,
+green at par. The whole cycle resolves in about 45 seconds, unattended.
+
+**[▶ Watch it run](https://abhijitbetigeri.github.io/Project-SCIM/)** — opens in a browser, nothing
+to install.
+
+## The product is the data
+
+The simulation is the visible part. The asset is what it emits.
+
+Every run produces a structured record of how the task was actually performed:
+
+- **Routes** — which path through a congested space, and how efficient it was
+- **Selection** — which crate was chosen when a near-expiry and a fresh one competed. This is a
+  *policy quality* signal, not just a trajectory
+- **Manipulation** — pick and place events with start and completion timing
+- **Handoff** — approach distance and release delay when passing an object to a person
+
+That last category is the one we think is genuinely missing from the field.
+
+There is substantial work on robots treating humans as obstacles to avoid. There is very little on
+robots treating humans as **collaborators receiving an object** — a cook who isn't looking, in a space
+too tight to wait politely in. How close does the robot come? How long does it hold before releasing?
+When does it retry? These are distributions, not constants, and you only obtain them by observing the
+handoff repeatedly under realistic pressure.
+
+A kitchen robot cannot be safely tuned without them. Nobody is collecting them.
+
+## Why simulation is the right substrate
+
+This isn't a stopgap while we wait for real-world capture. It's the better instrument, for three
+reasons.
+
+**Consent.** You cannot lawfully record a working kitchen. Staff mid-shift cannot meaningfully
+consent frame by frame, and a commercial kitchen is a private space. Simulation doesn't manage that
+problem — it removes it. No faces, no premises, no bystanders.
+
+**Repeatability.** The same scenario can be run hundreds of times with controlled variation in
+quantity, distance and crowding. Real operations give you one uncontrolled sample per shift.
+
+**Safety.** Congestion, near-misses and failed handoffs are the most valuable behaviours in the
+dataset and the ones you least want to stage with a person carrying 20 kg.
+
+And because scenarios originate from live agent tickets rather than hand-authored scripts, task
+variety is *generated*. The system writes its own curriculum.
+
+## The flywheel
+
+This is why the two halves belong together.
+
+**Agents decide → the world executes → the execution becomes data → the data trains a policy → the
+policy executes the next decision.**
+
+Each turn makes the next one better. The coordination layer produces an endless supply of realistic,
+economically meaningful tasks. The embodied layer turns each one into demonstration data. Nothing
+here depends on scraping someone else's dataset or waiting for a hardware generation to arrive.
+
+## Where this goes
+
+Near term, the world is a **development and evaluation environment**: a place to pretrain
+pick-carry-place and human-aware navigation policies, and to test them against congestion patterns
+before anything touches a real kitchen.
+
+Beyond that, the same instrumentation becomes an operational tool. If you can measure how long a
+transfer *should* take through a given floor plan, you can tell an operator that their pass is the
+bottleneck — and what moving one shelf would recover.
+
+The customers are the people already at this intersection: franchise operations teams carrying both
+waste and stockout costs, and robotics teams that need back-of-house behaviour data and currently have
+none.
+
+## Honest about the stage
+
+We'll say plainly what this is not. No policy has been trained yet — the robot follows a scripted
+task. What is real and working end to end is the pipeline from decision, through embodied execution,
+to robot-consumable trajectory data. That's the hard architectural problem, and it's solved.
+
+Training on it is the next step. We'd rather state that than let anyone discover it later.
+
+---
+
+Restaurant supply chain has spent a decade becoming smarter software. It is still, at the last metre,
+a person carrying a box through a doorway that's too narrow.
+
+**Supply chain has a brain. Now it needs a body.**
+
+**[See it work →](https://abhijitbetigeri.github.io/Project-SCIM/)**
