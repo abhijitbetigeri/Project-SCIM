@@ -1,0 +1,360 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Project-SCIM — Supply Chain Intelligence Management</title>
+<meta name="description" content="Mise agents decide the optimal restock. Project-SCIM is the world where a robot executes it — and every run becomes training data for a restaurant logistics robot.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;900&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════════════════════════════════
+   CONFIG — set this to the hosted Unity Web build, then redeploy.
+   Until it's set, the launch button shows a "build pending" state.
+   ═══════════════════════════════════════════════════════════════════════ */
+:root { --sim-url-set: 1; }
+
+:root{
+  --ink:#0a0b0d;
+  --ink-2:#111318;
+  --ink-3:#171a20;
+  --line:#262a33;
+  --bone:#e8e4dc;
+  --mute:#7c8391;
+  --signal:#e84a3e;
+  --surplus:#56c480;
+  --amber:#e8a83e;
+  --grid:rgba(232,228,220,.045);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  background:var(--ink);
+  color:var(--bone);
+  font-family:'IBM Plex Mono',ui-monospace,monospace;
+  font-size:15px;line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+/* blueprint grid + grain */
+body::before{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),
+                   linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:64px 64px;
+}
+body::after{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:1;opacity:.035;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+.wrap{position:relative;z-index:2;max-width:1180px;margin:0 auto;padding:0 28px}
+
+/* ── docket rail ─────────────────────────────────────────────── */
+.rail{
+  border-bottom:1px solid var(--line);
+  font-size:11px;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--mute);
+  display:flex;gap:28px;flex-wrap:wrap;align-items:center;
+  padding:14px 0;
+}
+.rail .dot{width:6px;height:6px;background:var(--signal);border-radius:50%;
+  animation:pulse 2.4s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
+
+/* ── hero ────────────────────────────────────────────────────── */
+.hero{padding:86px 0 70px;border-bottom:1px solid var(--line);position:relative}
+.eyebrow{
+  font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:var(--signal);
+  margin-bottom:26px;
+}
+h1{
+  font-family:'Archivo',sans-serif;font-weight:900;
+  font-size:clamp(2.9rem,8.5vw,6.4rem);line-height:.92;
+  letter-spacing:-.035em;text-transform:uppercase;margin-bottom:6px;
+}
+h1 .thin{font-weight:400;color:var(--mute);display:block;
+  font-size:clamp(1rem,2.4vw,1.6rem);letter-spacing:-.01em;
+  text-transform:none;margin-top:20px;max-width:52ch;line-height:1.45}
+.thesis{
+  margin-top:34px;padding-left:20px;border-left:2px solid var(--signal);
+  max-width:62ch;color:var(--bone);font-size:16px;
+}
+.thesis b{font-weight:600;color:#fff}
+
+.cta-row{display:flex;gap:14px;flex-wrap:wrap;margin-top:42px;align-items:center}
+.btn{
+  display:inline-flex;align-items:center;gap:11px;
+  padding:15px 26px;border:1px solid var(--line);
+  color:var(--bone);text-decoration:none;
+  font-size:12px;letter-spacing:.14em;text-transform:uppercase;font-weight:600;
+  background:var(--ink-2);transition:.22s cubic-bezier(.2,.7,.3,1);
+}
+.btn:hover{border-color:var(--bone);transform:translateY(-2px)}
+.btn.primary{background:var(--signal);border-color:var(--signal);color:#150806}
+.btn.primary:hover{background:#ff5a4c;border-color:#ff5a4c;
+  box-shadow:0 12px 34px -12px rgba(232,74,62,.75)}
+.btn .arrow{transition:transform .22s}
+.btn:hover .arrow{transform:translateX(4px)}
+
+/* ── section scaffolding ─────────────────────────────────────── */
+section{padding:72px 0;border-bottom:1px solid var(--line)}
+.sec-label{
+  font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--mute);
+  margin-bottom:30px;display:flex;align-items:center;gap:14px;
+}
+.sec-label::after{content:'';flex:1;height:1px;background:var(--line)}
+h2{font-family:'Archivo',sans-serif;font-weight:900;text-transform:uppercase;
+  font-size:clamp(1.5rem,3.4vw,2.3rem);letter-spacing:-.025em;
+  line-height:1.05;margin-bottom:20px}
+p.lede{max-width:64ch;color:#c3c0b8;margin-bottom:14px}
+
+/* ── loop ────────────────────────────────────────────────────── */
+.loop{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);
+  border:1px solid var(--line)}
+.loop > div{background:var(--ink-2);padding:30px 26px;position:relative}
+.loop .n{font-family:'Archivo',sans-serif;font-weight:900;font-size:2.6rem;
+  line-height:1;color:var(--line);margin-bottom:14px}
+.loop h3{font-size:12px;letter-spacing:.18em;text-transform:uppercase;
+  margin-bottom:12px;font-weight:600}
+.loop > div:nth-child(1) h3{color:var(--amber)}
+.loop > div:nth-child(2) h3{color:var(--signal)}
+.loop > div:nth-child(3) h3{color:var(--surplus)}
+.loop p{font-size:13.5px;color:var(--mute);line-height:1.65}
+
+/* ── ticket / numbers ────────────────────────────────────────── */
+.ticket{border:1px solid var(--line);background:var(--ink-2)}
+.ticket-head{padding:16px 24px;border-bottom:1px dashed var(--line);
+  font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--mute);
+  display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{padding:14px 24px;text-align:right;border-bottom:1px solid var(--line)}
+th:first-child,td:first-child{text-align:left}
+th{font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--mute);font-weight:500}
+tbody tr:last-child td{border-bottom:0}
+td.name{font-weight:600}
+.short{color:var(--signal)}
+.surp{color:var(--surplus)}
+.ticket-foot{padding:20px 24px;border-top:1px dashed var(--line);
+  display:flex;gap:34px;flex-wrap:wrap;align-items:baseline}
+.ticket-foot .big{font-family:'Archivo',sans-serif;font-weight:900;
+  font-size:2rem;letter-spacing:-.02em}
+.ticket-foot .cap{font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--mute);display:block;margin-bottom:4px}
+.note{margin-top:18px;font-size:13px;color:var(--mute);max-width:66ch}
+
+/* ── channels ────────────────────────────────────────────────── */
+.chan{display:grid;grid-template-columns:repeat(auto-fit,minmax(238px,1fr));
+  gap:1px;background:var(--line);border:1px solid var(--line)}
+.chan > div{background:var(--ink-2);padding:22px}
+.chan code{color:var(--amber);font-size:12.5px;display:block;margin-bottom:9px;
+  word-break:break-all}
+.chan p{font-size:13px;color:var(--mute);line-height:1.6}
+.chan .filled{border-left:2px solid var(--surplus)}
+
+/* ── links ───────────────────────────────────────────────────── */
+.links{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px}
+.lk{border:1px solid var(--line);background:var(--ink-2);padding:22px;
+  text-decoration:none;color:var(--bone);display:block;transition:.22s}
+.lk:hover{border-color:var(--bone);background:var(--ink-3);transform:translateY(-2px)}
+.lk .k{font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--mute);margin-bottom:8px}
+.lk .v{font-weight:600;font-size:14px}
+
+footer{padding:40px 0 64px;color:var(--mute);font-size:12px;
+  display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}
+
+/* ── entrance ────────────────────────────────────────────────── */
+.rise{opacity:0;transform:translateY(18px);animation:rise .8s cubic-bezier(.2,.7,.3,1) forwards}
+@keyframes rise{to{opacity:1;transform:none}}
+.d1{animation-delay:.05s}.d2{animation-delay:.14s}.d3{animation-delay:.23s}
+.d4{animation-delay:.32s}.d5{animation-delay:.41s}
+
+@media (prefers-reduced-motion:reduce){
+  .rise{animation:none;opacity:1;transform:none}
+  .rail .dot{animation:none}
+  html{scroll-behavior:auto}
+}
+@media (max-width:760px){
+  .loop{grid-template-columns:1fr}
+  th,td{padding:12px 16px}
+  .hero{padding:56px 0 48px}
+}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <div class="rail">
+    <span class="dot"></span>
+    <span>Open World Hackathon · 25 Jul 2026 · San Francisco</span>
+    <span>Track 2 — VLGE Together</span>
+    <span>Engine: Unity 6</span>
+  </div>
+
+  <!-- ── hero ──────────────────────────────────────────────── -->
+  <header class="hero">
+    <div class="eyebrow rise d1">Supply Chain Intelligence Management</div>
+    <h1 class="rise d1">
+      Supply chain<br>as a world model
+      <span class="thin">Restaurant stock rebalancing, performed physically — by a robot,
+      in a simulated back-of-house, generating the demonstration data that teaches
+      real ones.</span>
+    </h1>
+
+    <p class="thesis rise d2">
+      <b>Mise decides what should move.</b> Project-SCIM is the world where it
+      <b>gets done</b> — and every run becomes an imitation-learning dataset for a
+      restaurant logistics robot.
+    </p>
+
+    <div class="cta-row rise d3">
+      <a class="btn primary" id="sim-link" href="#" target="_blank" rel="noopener">
+        Launch the live simulation <span class="arrow">→</span>
+      </a>
+      <a class="btn" href="https://github.com/abhijitbetigeri/Project-SCIM" target="_blank" rel="noopener">
+        Source &amp; telemetry analysis
+      </a>
+    </div>
+  </header>
+
+  <!-- ── loop ──────────────────────────────────────────────── -->
+  <section>
+    <div class="sec-label rise d1">The loop</div>
+    <div class="loop rise d2">
+      <div>
+        <div class="n">01</div>
+        <h3>Decided</h3>
+        <p>A multi-agent mesh negotiates the shortage: transfer near-expiry surplus
+        between branches first, then buy only the net shortfall. One approval.
+        This half already works — it won AGI Summit 2026.</p>
+      </div>
+      <div>
+        <div class="n">02</div>
+        <h3>Done</h3>
+        <p>The unsolved half. A robot executes that ticket in real space — navigating a
+        cramped service pass, selecting the right crate, handing it to a cook who
+        isn't looking at it.</p>
+      </div>
+      <div>
+        <div class="n">03</div>
+        <h3>Learned</h3>
+        <p>Every run emits trajectories, zone transitions, pick and place events, and
+        handoff timing. The dataset a back-of-house restock policy trains on.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── ticket ────────────────────────────────────────────── -->
+  <section>
+    <div class="sec-label rise d1">The ticket being executed</div>
+    <h2 class="rise d1">Downtown is 36 kg short</h2>
+    <p class="lede rise d1">Real figures from the Mise agent fixtures — not illustrative.
+    The decision is non-trivial, and the simulation acts out exactly this.</p>
+
+    <div class="ticket rise d2">
+      <div class="ticket-head">
+        <span>Trattoria Verde · San Francisco</span>
+        <span>SKU TOM-ROMA · Roma tomatoes</span>
+      </div>
+      <table>
+        <thead>
+          <tr><th>Branch</th><th>On hand</th><th>Par</th><th>Expiry</th><th>Status</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="name">Downtown</td><td>4.0 kg</td><td>40</td><td>4 d</td>
+              <td class="short">−36 kg · below reorder</td></tr>
+          <tr><td class="name">Marina</td><td>34.0 kg</td><td>24</td><td>2 d</td>
+              <td class="surp">+10 kg surplus · near expiry</td></tr>
+          <tr><td class="name">Mission</td><td>16.0 kg</td><td>20</td><td>5 d</td>
+              <td class="short">−4 kg · cannot donate</td></tr>
+        </tbody>
+      </table>
+      <div class="ticket-foot">
+        <div><span class="cap">Transfer</span><span class="big">10 kg</span></div>
+        <div><span class="cap">Purchase</span><span class="big">26 kg</span></div>
+        <div><span class="cap">Landed cost</span><span class="big">$53.30</span></div>
+        <div><span class="cap">Waste avoided</span><span class="big">10 kg</span></div>
+      </div>
+    </div>
+    <p class="note">Mission holds 16 kg but sits below its own par, so it can't be the
+    donor. Marina's stock expires in two days, so it moves first. That's the whole
+    argument for coordination — and now for embodiment.</p>
+  </section>
+
+  <!-- ── data ──────────────────────────────────────────────── -->
+  <section>
+    <div class="sec-label rise d1">Why this is a robotics project</div>
+    <h2 class="rise d1">The behaviours nobody has data for</h2>
+    <p class="lede rise d1">Manipulation datasets are mostly tabletop. Warehouse datasets
+    assume wide aisles and no humans underfoot. A restaurant back-of-house is
+    sub-metre clearances, a moving crew, and objects whose identity matters — the
+    near-expiry crate is not interchangeable with the fresh one.</p>
+
+    <div class="chan rise d2">
+      <div class="filled"><code>zoneIdentifierAccesses</code>
+        <p>Entry and exit at each branch and the warehouse dock — task phase boundaries.</p></div>
+      <div class="filled"><code>interactionEventRecords</code>
+        <p>pick_begin → pick_complete → place_begin → place_complete. Manipulation segmentation.</p></div>
+      <div class="filled"><code>gamePlayEventRecords</code>
+        <p>Ticket assigned, task complete, scenario resolved. Success labelling.</p></div>
+      <div class="filled"><code>handoffEvents</code>
+        <p>Approach distance and release delay at the cook. <b>The collaboration timing
+        distribution</b> — the specific gap this addresses.</p></div>
+      <div><code>trajectory + action label</code>
+        <p>Pose, speed and a discrete action per sample, exported as CSV.</p></div>
+      <div><code>consent by construction</code>
+        <p>Simulated only. No real kitchens, no identifiable people — a working kitchen
+        is a private space whose staff cannot consent frame by frame.</p></div>
+    </div>
+  </section>
+
+  <!-- ── links ─────────────────────────────────────────────── -->
+  <section>
+    <div class="sec-label rise d1">Elsewhere</div>
+    <div class="links rise d2">
+      <a class="lk" href="https://github.com/abhijitbetigeri/Project-SCIM" target="_blank" rel="noopener">
+        <div class="k">Repository</div>
+        <div class="v">Source, telemetry schema analysis, extraction scripts →</div></a>
+      <a class="lk" href="https://k3trn3a2.insforge.site" target="_blank" rel="noopener">
+        <div class="k">Mise — the decision layer</div>
+        <div class="v">AGI Summit 2026 winner · agent mesh for zero waste →</div></a>
+      <a class="lk" href="https://github.com/abhijitbetigeri/SC-Intelligence" target="_blank" rel="noopener">
+        <div class="k">Mise source</div>
+        <div class="v">Multi-agent restaurant supply chain →</div></a>
+    </div>
+  </section>
+
+  <footer>
+    <span>Project-SCIM · Open World Hackathon 2026 · Powered by VLGE</span>
+    <span>Mise is pre-existing work. The simulation, the robot's execution and the
+      telemetry pipeline were built at the hackathon.</span>
+  </footer>
+
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════════════════════════
+   Set SIM_URL to the hosted Unity Web build. Leave empty and the button
+   degrades to a clearly-labelled pending state rather than a dead link.
+   ═══════════════════════════════════════════════════════════════════ */
+const SIM_URL = "";
+
+(function () {
+  const a = document.getElementById('sim-link');
+  if (SIM_URL) {
+    a.href = SIM_URL;
+  } else {
+    a.href = 'https://github.com/abhijitbetigeri/Project-SCIM';
+    a.target = '_self';
+    a.innerHTML = 'Simulation build — see repo <span class="arrow">→</span>';
+    a.style.background = 'transparent';
+    a.style.borderColor = 'var(--line)';
+    a.style.color = 'var(--bone)';
+  }
+})();
+</script>
+</body>
+</html>
